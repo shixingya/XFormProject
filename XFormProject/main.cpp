@@ -1,13 +1,8 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
+#include "global.h"
 
-#include <QApplication>
-#include <QLocale>
-#include <QTranslator>
-
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
-
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
     for (const QString &locale : uiLanguages) {
@@ -18,6 +13,11 @@ int main(int argc, char *argv[])
         }
     }
     MainWindow w;
+    QString windowTitle;
+    windowTitle.append(DisplayConstants::APP_NAME)
+    .append("_").append(DisplayConstants::APP_VERSION);
+    w.setWindowTitle(windowTitle);
+    w.setWindowIcon(QIcon(DisplayConstants::APP_ICON_PATH));
     w.show();
     return a.exec();
 }

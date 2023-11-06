@@ -16,6 +16,7 @@ HEADERS += \
     contants/constants.h \
     contants/constants_codes.h \
     contants/constants_displays.h \
+    global.h \
     mainwindow.h
 
 FORMS += \
@@ -30,3 +31,6 @@ CONFIG += embed_translations
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources/res.qrc

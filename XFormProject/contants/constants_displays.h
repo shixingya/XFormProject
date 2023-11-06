@@ -5,6 +5,7 @@
 namespace DisplayConstants {
 const QString APP_NAME = "示例程序";
 const QString APP_VERSION = "1.0.0";
+const QString APP_ICON_PATH = "://image/icon.png";
 const QString DEVELOPER_NAME = "雕爷优选";
 const QString DEVELOPER_EMAIL = "shixingya@126.com";
 const QString PROJECT_PATH = "/path/to/your/project";
