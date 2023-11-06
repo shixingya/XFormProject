@@ -3,4 +3,7 @@
 
 //包含错误码定义
 #include "constants_codes.h"
+
+//应用程序显示内容常量定义
+#include "constants_displays.h"
 #endif // CONSTANTS_H

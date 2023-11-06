@@ -15,6 +15,7 @@ SOURCES += \
 HEADERS += \
     contants/constants.h \
     contants/constants_codes.h \
+    contants/constants_displays.h \
     mainwindow.h
 
 FORMS += \
