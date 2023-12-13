@@ -1,4 +1,5 @@
-﻿#include "mainwindow.h"
+﻿#pragma execution_character_set("utf-8")
+#include "mainwindow.h"
 #include "global.h"
 
 int main(int argc, char *argv[]) {
@@ -15,7 +16,7 @@ int main(int argc, char *argv[]) {
     MainWindow w;
     QString windowTitle;
     windowTitle.append(DisplayConstants::APP_NAME)
-    .append("_").append(DisplayConstants::APP_VERSION);
+               .append("_").append(DisplayConstants::APP_VERSION);
     w.setWindowTitle(windowTitle);
     w.setWindowIcon(QIcon(DisplayConstants::APP_ICON_PATH));
     w.show();
