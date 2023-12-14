@@ -2,16 +2,6 @@
 #include <memory>
 #include <QThread>
 const int MIN_STEP_DISTANCE = 100;
-class Tester {
-  public:
-    Tester(const QString &name): name_(name) {
-    }
-    ~Tester() {
-        //qDebug() << "===== ====== ====== " << name_;
-    }
-  private:
-    QString name_;
-};
 
 class ControlHandle : public QGraphicsObject {
     Q_OBJECT
@@ -71,7 +61,6 @@ class ControlHandle : public QGraphicsObject {
             if(GetIndex() < 0) {
                 return QGraphicsItem::itemChange(change, value);
             }
-            Tester tester(this->objectName());
             QPointF newPos = value.toPointF();
             qDebug() << "call -------- " << this->objectName() << " " << newPos
                      << " " << GetIndex();
@@ -81,9 +70,7 @@ class ControlHandle : public QGraphicsObject {
                 auto threadId = currentThread->currentThreadId();
                 qreal distance = QLineF(previousPos, newPos).length();
                 if(distance > MIN_STEP_DISTANCE) {
-                    qDebug() << "call begin tID-" << threadId << " item Name =" << this->objectName();
                     emit positionChanged(newPos);
-                    qDebug() << "call end tID- " << newPos << threadId;
                 }
             }
         }
