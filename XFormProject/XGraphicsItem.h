@@ -40,6 +40,7 @@ class ControlHandle : public QGraphicsObject {
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override {
         Q_UNUSED(option);
         Q_UNUSED(widget);
+        painter->eraseRect(boundingRect());
         painter->setPen(Qt::yellow);
         painter->setBrush(Qt::darkGray);
         painter->drawEllipse(boundingRect());
@@ -48,33 +49,28 @@ class ControlHandle : public QGraphicsObject {
     }
 
   protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override {
-        if (change == ItemSelectedChange && scene()) {
-            isSelected = value.toBool();
-            if (isSelected) {
-                previousPos = pos();
-                qDebug() << "===============current Index:" << GetIndex()
-                         << "=============== Pos:" << previousPos
-                         << "========" << this->objectName();
-            }
-        } else if (change == ItemPositionChange && scene()) {
-            if(GetIndex() < 0) {
-                return QGraphicsItem::itemChange(change, value);
-            }
-            QPointF newPos = value.toPointF();
-            qDebug() << "call -------- " << this->objectName() << " " << newPos
-                     << " " << GetIndex();
-            if(isSelected) {
-                // 获取当前线程的ID
-                QThread* currentThread = QThread::currentThread();
-                auto threadId = currentThread->currentThreadId();
-                qreal distance = QLineF(previousPos, newPos).length();
-                if(distance > MIN_STEP_DISTANCE) {
-                    emit positionChanged(newPos);
-                }
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override {
+        if (event->button() == Qt::LeftButton) {
+            isSelected = true;
+            previousPos = event->scenePos();
+        }
+        QGraphicsItem::mousePressEvent(event);
+    }
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override {
+        if (isSelected) {
+            qreal distance = QLineF(previousPos, event->scenePos()).length();
+            if (abs(distance) > MIN_STEP_DISTANCE) {
+                qDebug() << "------------------------";
+                emit positionChanged(event->scenePos());
             }
         }
-        return QGraphicsItem::itemChange(change, value);
+        QGraphicsItem::mouseMoveEvent(event);
+    }
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event)override {
+        if (event->button() == Qt::LeftButton) {
+            isSelected = false;
+        }
+        QGraphicsItem::mouseReleaseEvent(event);
     }
 
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override {
@@ -88,7 +84,7 @@ class ControlHandle : public QGraphicsObject {
     }
 
   signals:
-    void positionChanged(QPointF newPos);
+    void positionChanged(QPointF scenePos);
 
   private:
     int index = -1;
@@ -223,22 +219,18 @@ class XGraphicsItem : public QGraphicsObject {
     }
 
   private slots:
-    void OnPositionChanged(QPointF newPos) {
+    void OnPositionChanged(QPointF scenePos) {
         auto handle = (ControlHandle*)(sender());
         QString objName;
         if (handle) {
             int index = handle->GetIndex();
             objName = handle->objectName();
             if (index >= 0) {
-                insertVertex(index + 1, newPos);
+                insertVertex(index + 1, mapFromScene(scenePos));
             } else {
                 qDebug("error");
             }
         }
-        // 获取当前线程的ID
-        QThread* currentThread = QThread::currentThread();
-        auto threadId = currentThread->currentThreadId();
-        qDebug() << "OnPositionChanged-" << threadId << " obj " << objName;
     }
 
   private:

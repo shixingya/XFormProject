@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui_->setupUi(this);
     scene_ = new QGraphicsScene(nullptr);
     ui_->graphicsView->setRenderHint(QPainter::Antialiasing);
+    //解决残影问题
+    ui_->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     // 创建一个矩形
     auto rectangleItem = CreateRectAngleItem(0, 0, 100, 100);
     scene_->addItem(rectangleItem);
