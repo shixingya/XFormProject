@@ -44,6 +44,7 @@ class ControlHandle : public QGraphicsObject {
         painter->setPen(Qt::yellow);
         painter->setBrush(Qt::darkGray);
         painter->drawEllipse(boundingRect());
+        painter->drawRect(boundingRect());
         painter->setPen(Qt::red);
         painter->drawText(QPointF(0, 0), QString::number(index));
     }
@@ -72,20 +73,32 @@ class ControlHandle : public QGraphicsObject {
         }
         QGraphicsItem::mouseReleaseEvent(event);
     }
-
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override {
+//    QVariant itemChange(GraphicsItemChange change, const QVariant& value) override {
+//        if (change == QGraphicsItem::ItemSelectedChange && scene()) {
+//            isSelected = value.toBool();
+//            if (isSelected) {
+//                previousPos = this->scenePos();
+//            }
+//        } else if (change == QGraphicsItem::ItemPositionChange && isSelected) {
+//            QPointF newPos = this->mapToScene(value.toPointF());
+//            qreal distance = QLineF(previousPos, newPos).length();
+//            if (abs(distance) > MIN_STEP_DISTANCE) {
+//                qDebug() << "------------------------";
+//                //emit positionChanged(newPos);
+//            }
+//        }
+//        return QGraphicsItem::itemChange(change, value);
+//    }
+    void hoverEnterEvent(QGraphicsSceneHoverEvent * event) override {
         Q_UNUSED(event);
         setOpacity(0.5);
     }
-
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override {
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent * event) override {
         Q_UNUSED(event);
         setOpacity(1.0);
     }
-
   signals:
     void positionChanged(QPointF scenePos);
-
   private:
     int index = -1;
     QPointF previousPos;
@@ -174,6 +187,7 @@ class XGraphicsItem : public QGraphicsObject {
             ControlHandlePtr handle = std::make_shared<ControlHandle>(this);
             handle->setPos(midPoint);
             handle->SetIndex(i);
+            handle->update();
             m_controlHandles.append(std::move(handle));
             //注意下面必须用QueuedConnection，用DirectConnection不行
             //因为在OnPositionChanged会把本体删除，
@@ -181,6 +195,7 @@ class XGraphicsItem : public QGraphicsObject {
             QObject::connect(m_controlHandles[i].get(), &ControlHandle::positionChanged,
                              this, &XGraphicsItem::OnPositionChanged, Qt::QueuedConnection);
         }
+        update();
     }
 
     void modifyVertices(int index, const QPointF &vertex) {
