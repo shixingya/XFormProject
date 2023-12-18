@@ -18,6 +18,13 @@
     <item row="0" column="0">
      <widget class="GraphicsView" name="graphicsView"/>
     </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="pushButton">
+      <property name="text">
+       <string>打开图片</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">

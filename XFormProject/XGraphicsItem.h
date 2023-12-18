@@ -148,7 +148,7 @@ class XGraphicsItem : public QGraphicsObject {
         painter->setRenderHint(QPainter::Antialiasing);
         if (isHighlighted()) {
             painter->setPen(QPen(Qt::red, 2));
-            painter->setBrush(QColor(0, 0, 255, 20));
+            painter->setBrush(QColor(0, 0, 255, 120));
         } else {
             painter->setPen(Qt::black);
             painter->setBrush(Qt::gray);

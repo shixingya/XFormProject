@@ -10,12 +10,14 @@ CONFIG += c++17
 
 SOURCES += \
     GraphicsView.cpp \
+    ROIImageItem.cpp \
     XGraphicsItem.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     GraphicsView.h \
+    ROIImageItem.h \
     XGraphicsItem.h \
     contants/constants.h \
     contants/constants_codes.h \

@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "XGraphicsItem.h"
+#include "ROIImageItem.h"
 XGraphicsItem *CreateRectAngleItem(qreal x, qreal y, qreal w, qreal h) {
     XGraphicsItem *resultItem = new XGraphicsItem();
     resultItem->setVertices({QPointF(x, y), QPointF(x + w, y), QPointF(x + w, y + h), QPointF(x, y + h)});
@@ -24,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui_->setupUi(this);
     scene_ = new QGraphicsScene(nullptr);
     ui_->graphicsView->setRenderHint(QPainter::Antialiasing);
+    ui_->graphicsView->SetBackGroundType(GraphicsView::GRID);
     //解决残影问题
     ui_->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     // 创建一个矩形
@@ -67,9 +69,24 @@ MainWindow::MainWindow(QWidget *parent)
 //    pointCloudItem->setPos(150, 300);
 //    scene_->addItem(pointCloudItem);
     ui_->graphicsView->setScene(scene_);
+    // 打开图片文件
+    QPixmap pixmap(":/image/2DMeasure.bmp");
+    // 创建图像项，并将其添加到场景中
+    _ROIImageItem = new ROIImageItem(pixmap);
+    _ROIImageItem->setZValue(-1);
+    scene_->addItem(_ROIImageItem);
 }
 
 MainWindow::~MainWindow() {
     delete ui_;
+}
+
+
+void MainWindow::on_pushButton_clicked() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), ".", tr("Image Files (*.png *.jpg *.bmp)"));
+    if (!fileName.isEmpty()) {
+        _ROIImageItem->SetImage(fileName);
+        //ui_->graphicsView->fitInView(_scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+    }
 }
 

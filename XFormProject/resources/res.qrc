@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>image/icon.png</file>
+        <file>image/2DMeasure.bmp</file>
+        <file>image/rotate.png</file>
     </qresource>
 </RCC>
