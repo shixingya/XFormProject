@@ -116,7 +116,7 @@ void XGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
         painter->setBrush(QColor(0, 0, 255, 120));
     } else {
         painter->setPen(Qt::black);
-        painter->setBrush(Qt::gray);
+        painter->setBrush(QColor(0, 0, 255, 200));
     }
     painter->drawPath(m_shape);
 }

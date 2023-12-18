@@ -9,7 +9,6 @@ namespace Ui {
 class MainWindow;
 }
 QT_END_NAMESPACE
-class ROIImageItem;
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -19,11 +18,8 @@ class MainWindow : public QMainWindow {
 
   private slots:
     void on_pushButton_clicked();
-
   private:
     Ui::MainWindow *ui_;
     QGraphicsScene *scene_ = nullptr;
-
-    ROIImageItem *_ROIImageItem = nullptr;
 };
 #endif // MAINWINDOW_H
