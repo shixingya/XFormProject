@@ -1,76 +1,5 @@
 #include "XGraphicsItem.h"
-ControlHandle::ControlHandle(QGraphicsItem *parent)
-    : QGraphicsObject(parent) {
-    setFlag(QGraphicsItem::ItemIsMovable, true);
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
-    setAcceptHoverEvents(true);
-    static int index = 0;
-    index++;
-    setObjectName(QString("control_handle %1").arg(index));
-}
-ControlHandle::~ControlHandle() {
-    qDebug() << "delete objName:" << this->objectName();
-}
-int ControlHandle::GetIndex() const {
-    return index;
-}
 
-void ControlHandle::SetIndex(int idx) {
-    index = idx;
-}
-
-QRectF ControlHandle::boundingRect() const  {
-    return QRectF(-5, -5, 10, 10);
-}
-
-QPainterPath ControlHandle::shape() const  {
-    QPainterPath path;
-    path.addEllipse(boundingRect());
-    return path;
-}
-void ControlHandle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)  {
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    painter->eraseRect(boundingRect());
-    painter->setPen(Qt::yellow);
-    painter->setBrush(Qt::darkGray);
-    painter->drawEllipse(boundingRect());
-    painter->drawRect(boundingRect());
-    painter->setPen(Qt::red);
-    painter->drawText(QPointF(0, 0), QString::number(index));
-}
-void ControlHandle::mousePressEvent(QGraphicsSceneMouseEvent *event)  {
-    if (event->button() == Qt::LeftButton) {
-        isSelected = true;
-        previousPos = event->scenePos();
-    }
-    QGraphicsItem::mousePressEvent(event);
-}
-void ControlHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event)  {
-    if (isSelected) {
-        qreal distance = QLineF(previousPos, event->scenePos()).length();
-        if (abs(distance) > MIN_STEP_DISTANCE) {
-            qDebug() << "------------------------";
-            emit positionChanged(event->scenePos());
-        }
-    }
-    QGraphicsItem::mouseMoveEvent(event);
-}
-void ControlHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        isSelected = false;
-    }
-    QGraphicsItem::mouseReleaseEvent(event);
-}
-void ControlHandle::hoverEnterEvent(QGraphicsSceneHoverEvent * event)  {
-    Q_UNUSED(event);
-    setOpacity(0.5);
-}
-void ControlHandle::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)  {
-    Q_UNUSED(event);
-    setOpacity(1.0);
-}
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
@@ -112,10 +41,10 @@ void XGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     Q_UNUSED(widget);
     painter->setRenderHint(QPainter::Antialiasing);
     if (isHighlighted()) {
-        painter->setPen(QPen(Qt::red, 2));
+        painter->setPen(QPen(Qt::darkGreen, 2));
         painter->setBrush(QColor(0, 0, 255, 120));
     } else {
-        painter->setPen(Qt::black);
+        painter->setPen(Qt::green);
         painter->setBrush(QColor(0, 0, 255, 200));
     }
     painter->drawPath(m_shape);
@@ -141,23 +70,40 @@ void XGraphicsItem::updateShape() {
 void XGraphicsItem::updateControlHandles() {
     m_controlHandles.clear();
     int size = m_vertices.size();
-    for (int i = 0; i < size; ++i) {
-        QPointF p1 = m_vertices[i];
-        QPointF p2 = m_vertices[(i + 1) % size];
-        if (i + 1 == size) {
-            p2 = m_vertices[0];
-        }
+    auto createEndPoint = [&](int index, const QPointF & pos) {
+        ControlHandlePtr handle = std::make_shared<ControlHandle>(this);
+        handle->setPos(pos);
+        handle->SetIndex(index);
+        handle->SetHandleType(ControlHandle::END_POINT);
+        m_controlHandles.append(std::move(handle));
+    };
+    auto createMidPoint = [&](int index, const QPointF & p1, const QPointF & p2) {
         QPointF midPoint = (p1 + p2) / 2;
         ControlHandlePtr handle = std::make_shared<ControlHandle>(this);
         handle->setPos(midPoint);
-        handle->SetIndex(i);
-        handle->update();
+        handle->SetIndex(index);
+        handle->SetHandleType(ControlHandle::MID_POINT);
         m_controlHandles.append(std::move(handle));
+    };
+    for (int index = 0; index < size; ++index) {
+        QPointF p1 = m_vertices[index];
+        createEndPoint(index, p1);
+        QPointF p2 = m_vertices[(index + 1) % size];
+        if (index + 1 == size) {
+            p2 = m_vertices[0];
+        }
+        createMidPoint(index, p1, p2);
+    }
+    for(auto item : m_controlHandles ) {
         //注意下面必须用QueuedConnection，用DirectConnection不行
         //因为在OnPositionChanged会把本体删除，
         //ControlHandle发送信号后后续执行会崩溃。
-        QObject::connect(m_controlHandles[i].get(), &ControlHandle::positionChanged,
+        QObject::connect(item.get(), &ControlHandle::positionChanged,
                          this, &XGraphicsItem::OnPositionChanged, Qt::QueuedConnection);
+        QObject::connect(item.get(), &ControlHandle::hideMiddlePoints,
+                         this, &XGraphicsItem::OnHideMiddlePoints, Qt::QueuedConnection);
+        QObject::connect(item.get(), &ControlHandle::showMiddlePoints,
+                         this, &XGraphicsItem::OnShowMiddlePoints, Qt::QueuedConnection);
     }
     update();
 }
@@ -196,6 +142,42 @@ void XGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)  {
     m_highlighted = false;
     update();
 }
+
+void moveVertex(QVector<QPointF>& vertices, int index, const QPointF& newPos) {
+    // 获取原始顶点和目标位置
+    QPointF oldPos = vertices[index];
+    QPointF translation = newPos - oldPos;
+    // 计算缩放比例
+    qreal scaleX = newPos.x() / oldPos.x();
+    qreal scaleY = newPos.y() / oldPos.y();
+    // 移动顶点并按比例缩放其他顶点
+    for (int i = 0; i < vertices.size(); i++) {
+        if (i == index) {
+            vertices[i] = newPos;
+        } else {
+            QPointF vertex = vertices[i] - oldPos;
+            vertex.setX(vertex.x() * scaleX);
+            vertex.setY(vertex.y() * scaleY);
+            vertex += newPos;
+            vertices[i] = vertex;
+        }
+    }
+}
+void XGraphicsItem::OnHideMiddlePoints() {
+    for(auto item : m_controlHandles) {
+        if(item->GetHandleType() == ControlHandle::MID_POINT) {
+            item->hide();
+        }
+    }
+}
+void XGraphicsItem::OnShowMiddlePoints() {
+    updateControlHandles();
+    for(auto item : m_controlHandles) {
+        if(item->GetHandleType() == ControlHandle::MID_POINT) {
+            item->show();
+        }
+    }
+}
 void XGraphicsItem::OnPositionChanged(QPointF scenePos) {
     auto handle = (ControlHandle*)(sender());
     QString objName;
@@ -203,7 +185,14 @@ void XGraphicsItem::OnPositionChanged(QPointF scenePos) {
         int index = handle->GetIndex();
         objName = handle->objectName();
         if (index >= 0) {
-            insertVertex(index + 1, mapFromScene(scenePos));
+            if(handle->GetHandleType() == ControlHandle::END_POINT) {
+                if(handle->IsResizing()) {
+                    moveVertex(m_vertices, index, mapFromScene(scenePos));
+                }
+                modifyVertices(index, mapFromScene(scenePos));
+            } else {
+                insertVertex(index + 1, mapFromScene(scenePos));
+            }
         } else {
             qDebug("error");
         }

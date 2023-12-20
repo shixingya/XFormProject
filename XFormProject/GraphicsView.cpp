@@ -21,7 +21,7 @@ GraphicsView::GraphicsView(QWidget* parent) : QGraphicsView(parent) {
 void GraphicsView::wheelEvent(QWheelEvent* event) {
     if (event->modifiers() == Qt::ControlModifier) {
         int delta = event->angleDelta().y();
-        qreal scaleFactor = (delta > 0) ? 1.2 : 1.0 / 1.2;
+        qreal scaleFactor = (delta > 0) ? 1.1 : 0.9;
         scale(scaleFactor, scaleFactor);
         event->accept();
     } else {
@@ -37,7 +37,7 @@ void GraphicsView::mouseMoveEvent(QMouseEvent* event) {
     QGraphicsView::mouseMoveEvent(event);
     QPointF scenePos = mapToScene(event->pos());
     label->setText(QString("Mouse Position: (%1, %2)").arg(scenePos.x()).arg(scenePos.y()));
-    label->move(event->globalPos().x() + 10, event->globalPos().y() + 10);
+    label->move(event->pos().x(), event->pos().y() + 30);
     label->show();
 }
 
@@ -82,8 +82,8 @@ void GraphicsView::drawBackground(QPainter* painter, const QRectF& rect) {
     }
 }
 void  GraphicsView::resizeEvent(QResizeEvent* event)  {
-    QGraphicsView::resizeEvent(event);
     fitInView(sceneRect(), Qt::KeepAspectRatio);
+    QGraphicsView::resizeEvent(event);
 }
 void GraphicsView::leaveEvent(QEvent* event)  {
     QGraphicsView::leaveEvent(event);

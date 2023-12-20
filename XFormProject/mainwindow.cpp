@@ -37,9 +37,9 @@ MainWindow::MainWindow(QWidget *parent)
 //    triangleItem->setPos(150, 0);
 //    scene_->addItem(triangleItem);
 //    //创建一个多边形
-    XGraphicsItem *polygonItem = CreatePolygonItem(QPolygonF({QPointF(0, 0), QPointF(44, 13), QPointF(100, 0), QPointF(100, 100), QPointF(0, 100)}));
-    polygonItem->setPos(0, 150);
-    scene_->addItem(polygonItem);
+//    XGraphicsItem *polygonItem = CreatePolygonItem(QPolygonF({QPointF(0, 0), QPointF(44, 13), QPointF(100, 0), QPointF(100, 100), QPointF(0, 100)}));
+//    polygonItem->setPos(0, 150);
+//    scene_->addItem(polygonItem);
 //    // 创建一个仿射矩形
 //    XGraphicsItem *affineRectangleItem = CreatePolygonItem(
 //            QPolygonF({QPointF(0, 0), QPointF(100, 0), QPointF(75, 100), QPointF(25, 100)}));

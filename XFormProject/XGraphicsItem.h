@@ -1,38 +1,8 @@
 #include <QtWidgets>
 #include <memory>
 #include <QThread>
-const int MIN_STEP_DISTANCE = 100;
+#include "ControlHandle.h"
 
-class ControlHandle : public QGraphicsObject {
-    Q_OBJECT
-  public:
-    ControlHandle(QGraphicsItem *parent = nullptr);
-    virtual ~ControlHandle();
-    int GetIndex() const;
-    void SetIndex(int idx);
-
-    QRectF boundingRect() const override;
-
-    QPainterPath shape() const override;
-
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget) override;
-
-  protected:
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event)override;
-    void hoverEnterEvent(QGraphicsSceneHoverEvent * event) override;
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent * event) override;
-  signals:
-    void positionChanged(QPointF scenePos);
-  private:
-    int index = -1;
-    QPointF previousPos;
-    bool isSelected = false;
-};
-
-typedef std::shared_ptr<ControlHandle> ControlHandlePtr;
 class XGraphicsItem : public QGraphicsObject {
     Q_OBJECT
   public:
@@ -56,6 +26,8 @@ class XGraphicsItem : public QGraphicsObject {
 
   private slots:
     void OnPositionChanged(QPointF scenePos);
+    void OnHideMiddlePoints();
+    void OnShowMiddlePoints();
 
   private:
     QVector<QPointF> m_vertices;
