@@ -1,4 +1,4 @@
-#ifndef GRAPHICSVIEW_H
+﻿#ifndef GRAPHICSVIEW_H
 #define GRAPHICSVIEW_H
 
 #include <QWidget>
@@ -27,6 +27,7 @@ class GraphicsView: public QGraphicsView {
     virtual void drawBackground(QPainter *painter, const QRectF &rect) override;
     virtual void resizeEvent(QResizeEvent* event) override;
     virtual void leaveEvent(QEvent* event) override;
+    virtual void keyPressEvent(QKeyEvent* event) override;
 
   private:
     QGraphicsPixmapItem *_pixmapItem = nullptr;

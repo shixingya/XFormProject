@@ -1,7 +1,9 @@
-#pragma execution_character_set("utf-8")
+﻿#pragma execution_character_set("utf-8")
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "XGraphicsItem.h"
+
+#include "global.h"
 XGraphicsItem *CreateRectAngleItem(qreal x, qreal y, qreal w, qreal h) {
     XGraphicsItem *resultItem = new XGraphicsItem();
     resultItem->setVertices({QPointF(x, y), QPointF(x + w, y), QPointF(x + w, y + h), QPointF(x, y + h)});
@@ -22,11 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui_(new Ui::MainWindow) {
     ui_->setupUi(this);
+    initUI();
     scene_ = new QGraphicsScene(nullptr);
-    ui_->graphicsView->setRenderHint(QPainter::Antialiasing);
-    ui_->graphicsView->SetBackGroundType(GraphicsView::GRID);
-    //解决残影问题
-    ui_->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     // 创建一个矩形
     auto rectangleItem = CreateRectAngleItem(0, 0, 100, 100);
     rectangleItem->setPos(0, 0);
@@ -75,7 +74,28 @@ MainWindow::~MainWindow() {
     delete ui_;
 }
 
-
+void MainWindow::initUI() {
+    QString windowTitle;
+    windowTitle.append(DisplayConstants::APP_NAME)
+               .append("_").append(DisplayConstants::APP_VERSION);
+    setWindowTitle(windowTitle);
+    setWindowIcon(QIcon(DisplayConstants::APP_ICON_PATH));
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QRect screenGeometry = screen->geometry();
+    auto screenWidth = screenGeometry.width();
+    auto screenHeight = screenGeometry.height();
+    auto windowWidth = screenWidth * 0.9;
+    auto windowHeight = screenHeight * 0.8;
+    auto windowX = (screenWidth - windowWidth) / 2;
+    auto windowY = (screenHeight - windowHeight) / 2;
+    resize(windowWidth, windowHeight);
+    move(windowX, windowY);
+    //视图设置
+    ui_->graphicsView->setRenderHint(QPainter::Antialiasing);
+    ui_->graphicsView->SetBackGroundType(GraphicsView::GRID);
+    //解决残影问题
+    ui_->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+}
 void MainWindow::on_pushButton_clicked() {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), ".", tr("Image Files (*.png *.jpg *.bmp)"));
     if (!fileName.isEmpty()) {
